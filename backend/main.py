@@ -16,9 +16,16 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"],
                   allow_methods=["*"], allow_headers=["*"])
 
 # Init models once at startup
-embedder = SentenceTransformer("all-MiniLM-L6-v2")  # small, fast, free
-chroma = chromadb.Client()
-groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+embedder = None
+chroma = None
+groq_client = None
+
+@app.on_event("startup")
+def startup():
+    global embedder, chroma, groq_client
+    embedder = SentenceTransformer("all-MiniLM-L6-v2")
+    chroma = chromadb.Client()
+    groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 def chunk_text(text: str, size=500, overlap=50):
     chunks, start = [], 0
